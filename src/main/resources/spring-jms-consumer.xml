@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jms="http://www.springframework.org/schema/jms"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+
+    <!--配置mq的连接工厂-->
+    <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <constructor-arg name="brokerURL" value="${mq.url}"></constructor-arg>
+    </bean>
+    <!--连接工厂的池特性-->
+    <bean id="cachingConnectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+        <constructor-arg name="targetConnectionFactory" ref="connectionFactory"></constructor-arg>
+        <property name="sessionCacheSize" value="${mq.session.num}"></property>
+    </bean>
+    <!--容器工厂-->
+    <bean id="containerFactory" class="org.springframework.jms.config.SimpleJmsListenerContainerFactory">
+        <property name="connectionFactory" ref="cachingConnectionFactory"></property>
+        <property name="sessionAcknowledgeMode" value="${mq.session.ack}"></property>
+        <!--false就是queue 而不是topic-->
+        <property name="pubSubDomain" value="false"></property>
+    </bean>
+    <!--注解开发-->
+    <jms:annotation-driven/>
+    <context:component-scan base-package="com.cxs.listener"></context:component-scan>
+</beans>
